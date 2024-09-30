@@ -11,32 +11,17 @@ const Chat = () => {
 	const socket = io(import.meta.env.VITE_API_URL);
 
 	useEffect(() => {
-		// Get username from local storage
 		const user = localStorage.getItem("username");
 		if (user) {
 			setUsername(user);
 		}
 
-		// Fetch initial messages from API
-		// const fetchMessages = async () => {
-		// 	try {
-		// 		const response = await axios.get(
-		// 			`${import.meta.env.VITE_API_URL}/api/messages`
-		// 		);
-		// 		setMessages(response.data);
-		// 	} catch (error) {
-		// 		console.error("Error fetching messages:", error);
-		// 	}
-		// };
-
-		// fetchMessages();
-
-		// Listen for new messages from the socket
-		socket.on("newMessage", (message) => {
-			setMessages((prev) => [...prev, message]);
+		socket.on("connect", () => {
+			socket.on("send_message", (message) => {
+				setMessages((prev) => [...prev, message]);
+			});
 		});
 
-		// Clean up the socket connection on component unmount
 		return () => {
 			socket.disconnect();
 		};

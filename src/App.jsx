@@ -1,44 +1,80 @@
-import { Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Chat from "./pages/Chat";
-import { useEffect } from "react";
-import { useAuth } from "./context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import RouteGuard from "./components/RouteGuard";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import { Input } from "./components/ui/input";
+import { Button } from "./components/ui/button";
 
-const App = () => {
-	const { isAuthenticated } = useAuth();
-	const navigate = useNavigate();
+const socket = io("http://localhost:3000"); // Make sure this matches your server port
+
+function App() {
+	const [messages, setMessages] = useState([]);
+	const [input, setInput] = useState("");
+	const [username, setUsername] = useState("");
 
 	useEffect(() => {
-		if (isAuthenticated) {
-			navigate("/chat");
-		} else {
-			navigate("/");
+		socket.on("chatMessage", (msg) => {
+			setMessages((prev) => [...prev, msg]);
+		});
+
+		return () => {
+			socket.off("chatMessage");
+		};
+	}, []);
+
+	const sendMessage = (e) => {
+		e.preventDefault();
+		if (input && username) {
+			const message = { user: username, text: input };
+			socket.emit("chatMessage", message);
+			setInput("");
 		}
-	}, [isAuthenticated]);
+	};
 
 	return (
-		<Routes>
-			<Route
-				path="/"
-				element={<Login />}
-			/>
-			<Route
-				path="/signup"
-				element={<Signup />}
-			/>
-			<Route
-				path="/chat"
-				element={
-					<RouteGuard>
-						<Chat />
-					</RouteGuard>
-				}
-			/>
-		</Routes>
+		<div className="App">
+			<ul className="flex flex-col gap-2">
+				{messages.map((msg, index) => (
+					<li
+						className="rounded bg-gray-200 pr-5 flex gap-5"
+						key={index}
+					>
+						<div className="rounded py-2 w-[20%] bg-gray-400 text-center text-white">
+							{msg.user}
+						</div>
+						<div className="py-2">{msg.text}</div>
+					</li>
+				))}
+			</ul>
+			<form
+				className="flex pb-5 gap-5 fixed bottom-0 right-0 left-0 px-10 h-14"
+				onSubmit={sendMessage}
+			>
+				<Input
+					type="text"
+					value={username}
+					onChange={(e) => setUsername(e.target.value)}
+					className="w-1/4"
+					placeholder="Enter your username..."
+				/>
+				<Input
+					type="text"
+					value={input}
+					onChange={(e) => {
+						// 33-47 58-64
+						// const sanitizedInput = e.target.value.=if () {
+
+						if (RegExp(/[!@#$%^&*()-<>,.?/';:_"[\]{}]/g).test(e.target.value)) {
+							console.error("Not allowed");
+						}
+
+						// setInput(sanitizedInput);
+						// setInput(e.target.value);
+					}}
+					placeholder="Type a message..."
+				/>
+				<Button type="submit">Send</Button>
+			</form>
+		</div>
 	);
-};
+}
 
 export default App;

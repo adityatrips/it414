@@ -1,43 +1,35 @@
+// server.js
 const express = require("express");
-const cors = require("cors");
 const http = require("http");
-const { Server } = require("socket.io");
-const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
-const messageRoutes = require("./routes/chatRoutes");
-const dotenv = require("dotenv");
-
-dotenv.config();
-connectDB();
+const socketIo = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+const io = socketIo(server, {
 	cors: {
 		origin: "*",
 	},
 });
 
-app.use(cors());
+// Middleware
+app.use(express.static("public"));
 app.use(express.json());
-app.use("/api/auth", authRoutes);
-app.use("/api/messages", messageRoutes);
 
-// Handle Socket.io connections
+// Socket.IO configuration
 io.on("connection", (socket) => {
-	console.log("New client connected");
+	console.log("New user connected");
 
-	socket.on("send_message", (data) => {
-		const { message, username } = data;
-		io.emit("receive_message", { message, username });
+	socket.on("chatMessage", (msg) => {
+		io.emit("chatMessage", msg); // Broadcast to all clients
 	});
 
 	socket.on("disconnect", () => {
-		console.log("Client disconnected");
+		console.log("User disconnected");
 	});
 });
 
+// Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-	console.log(`Server is running on http://localhost:${PORT}`);
+	console.log(`Server running on http://localhost:${PORT}`);
 });
