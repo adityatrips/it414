@@ -59,7 +59,7 @@ function App() {
 					type="text"
 					value={input}
 					onChange={(e) => {
-						if (RegExp(/[a-zA-Z]/g).test(e.target.value)) {
+						if (!RegExp(/[a-zA-Z]/g).test(e.target.value)) {
 							console.error("Not allowed");
 						} else {
 							setInput(e.target.value);
