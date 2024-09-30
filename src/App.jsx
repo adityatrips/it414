@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import { Input } from "./components/ui/input";
 import { Button } from "./components/ui/button";
 
-const socket = io("http://localhost:3000"); // Make sure this matches your server port
+const socket = io(import.meta.env.VITE_API_URL); // Make sure this matches your server port
 
 function App() {
 	const [messages, setMessages] = useState([]);
