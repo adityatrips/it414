@@ -59,10 +59,10 @@ function App() {
 					type="text"
 					value={input}
 					onChange={(e) => {
-						if (RegExp(/[a-zA-Z0-9]*/gi).test(e.target.value)) {
-							setInput(e.target.value);
-						} else {
+						if (RegExp(/[a-zA-Z]/g).test(e.target.value)) {
 							console.error("Not allowed");
+						} else {
+							setInput(e.target.value);
 						}
 					}}
 					placeholder="Type a message..."
