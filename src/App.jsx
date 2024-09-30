@@ -59,15 +59,11 @@ function App() {
 					type="text"
 					value={input}
 					onChange={(e) => {
-						// 33-47 58-64
-						// const sanitizedInput = e.target.value.=if () {
-
 						if (RegExp(/[!@#$%^&*()-<>,.?/';:_"[\]{}]/g).test(e.target.value)) {
 							console.error("Not allowed");
+						} else {
+							setInput(e.target.value);
 						}
-
-						// setInput(sanitizedInput);
-						// setInput(e.target.value);
 					}}
 					placeholder="Type a message..."
 				/>
