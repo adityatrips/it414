@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
+import io from "socket.io-client";
 
 const Chat = () => {
 	const [messages, setMessages] = useState([]);
 	const [content, setContent] = useState("");
 	const [username, setUsername] = useState("");
+	const socket = io(import.meta.env.VITE_API_URL);
 
 	useEffect(() => {
 		// Get username from local storage
@@ -15,32 +17,41 @@ const Chat = () => {
 			setUsername(user);
 		}
 
-		// Fetch messages from API
-		const fetchMessages = async () => {
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/messages`
-				);
-				setMessages(response.data);
-			} catch (error) {
-				console.error("Error fetching messages:", error);
-			}
-		};
+		// Fetch initial messages from API
+		// const fetchMessages = async () => {
+		// 	try {
+		// 		const response = await axios.get(
+		// 			`${import.meta.env.VITE_API_URL}/api/messages`
+		// 		);
+		// 		setMessages(response.data);
+		// 	} catch (error) {
+		// 		console.error("Error fetching messages:", error);
+		// 	}
+		// };
 
-		fetchMessages();
-	}, []);
+		// fetchMessages();
+
+		// Listen for new messages from the socket
+		socket.on("newMessage", (message) => {
+			setMessages((prev) => [...prev, message]);
+		});
+
+		// Clean up the socket connection on component unmount
+		return () => {
+			socket.disconnect();
+		};
+	}, [socket]);
 
 	const handleSendMessage = async (e) => {
 		e.preventDefault();
 		if (content) {
 			try {
 				const messageData = { username, message: content };
-				const res = await axios.post(
+				await axios.post(
 					`${import.meta.env.VITE_API_URL}/api/messages`,
 					messageData
 				);
-				setMessages((prev) => [...prev, messageData]);
-				console.log(res.data);
+				socket.emit("send_message", messageData);
 				setContent("");
 			} catch (error) {
 				console.error("Error sending message:", error);
