@@ -59,8 +59,8 @@ function App() {
 					type="text"
 					value={input}
 					onChange={(e) => {
-						if (!RegExp(/[a-zA-Z]/g).test(e.target.value)) {
-							console.error("Not allowed");
+						if (!/^[a-zA-Z0-9]*$/.test(e.target.value)) {
+							console.error("Only alphabets and numbers are allowed");
 						} else {
 							setInput(e.target.value);
 						}
